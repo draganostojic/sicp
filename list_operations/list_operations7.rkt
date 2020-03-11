@@ -40,7 +40,6 @@ here-string
      (define rows (range 1 (+ all-queens 1)))
      (define initial-solutions (map (λ (row) (list (list 1 row))) rows))
      (define and-op (λ (x acc) (and x acc)))
-     (define or-op (λ (x acc) (or x acc)))
      (define (safe? pos)
        (local
          ((define first-queen-pos (car pos))
@@ -48,17 +47,16 @@ here-string
           (define (col queen-pos) (car queen-pos))
           (define row-first-queen (row first-queen-pos))
           (define col-first-queen (col first-queen-pos))
-          (define rest-queen-posts (cdr pos))
-          (define on-same-diag?
-            (foldr or-op false (map (λ (rest-queen-pos)
-                                      (= (abs (- col-first-queen (col rest-queen-pos)))
-                                         (abs (- row-first-queen (row rest-queen-pos)))))
-                                    rest-queen-posts)))
-          (define on-same-row?
-            (foldr or-op false (map (λ (rest-queen-pos)
-                                      (= row-first-queen (row rest-queen-pos)))
-                                    rest-queen-posts))))
-         (and (not on-same-row?) (not on-same-diag?))))       
+          (define rest-queen-posts (cdr pos)))
+          (foldr and-op true (map (λ (rest-queen-pos)
+                                    (local
+                                      ((define on-same-diag?
+                                         (= (abs (- col-first-queen (col rest-queen-pos)))
+                                            (abs (- row-first-queen (row rest-queen-pos)))))
+                                       (define on-same-row?
+                                         (= row-first-queen (row rest-queen-pos))))
+                                      (and (not on-same-row?) (not on-same-diag?))))
+                                  rest-queen-posts))))
      (define (iterate placed-queens prev-sols)
        (cond
          ((= placed-queens all-queens) prev-sols)
